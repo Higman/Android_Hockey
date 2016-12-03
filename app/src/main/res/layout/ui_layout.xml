@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:weightSum="10">
+
+    <!--  Player2  -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:weightSum="3"
+        >
+        <!--  右移動ボタン  -->
+        <Button
+            android:id="@+id/player2_right_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="right"
+            android:rotation="180"
+            />
+
+        <!--  SMASHボタン  -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="10">
+            <Space
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                />
+            <Button
+                android:id="@+id/player2_smash_button"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="6"
+                android:text="Smash"
+                android:rotation="180"
+                />
+            <Space
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                />
+        </LinearLayout>
+
+        <!--  左移動ボタン  -->
+        <Button
+            android:id="@+id/player2_left_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="left"
+            android:rotation="180"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:text="player2"
+        android:rotation="180"
+        android:textSize="20sp"
+        android:textColor="#ff3030"
+        android:gravity="center" />
+
+    <!--  中央部  -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="7"
+        android:weightSum="8">
+        <!--  左側  -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="10">
+
+            <!--  Player2のスコア  -->
+            <TextView
+                android:id="@+id/player2_score_text"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="5"
+                android:text="点"
+                android:textColor="#ff3030"
+                android:gravity="center"
+                android:rotation="180"/>
+
+            <!--  Player1の強化ボタン  -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="5"
+                android:weightSum="4">
+
+                <!-- 特殊効果ボタン1  -->
+                <Button
+                    android:id="@+id/player1_special_button1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="1" />
+
+                <!-- 特殊効果ボタン2  -->
+                <Button
+                    android:id="@+id/player1_special_button2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="2" />
+
+                <!-- 特殊効果ボタン3  -->
+                <Button
+                    android:id="@+id/player1_special_button3"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="3" />
+
+                <!-- 特殊効果ボタン4  -->
+                <Button
+                    android:id="@+id/player1_special_button4"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="4" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--  中央  -->
+        <SurfaceView
+            android:id="@+id/board_view"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6"/>
+
+        <!--  右側  -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="10">
+
+            <!--  Player2の強化ボタン  -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="5"
+                android:weightSum="4">
+
+                <!-- 特殊効果ボタン4  -->
+                <Button
+                    android:id="@+id/player2_special_button4"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="4"
+                    android:rotation="180" />
+
+                <!-- 特殊効果ボタン3  -->
+                <Button
+                    android:id="@+id/player2_special_button3"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="3"
+                    android:rotation="180" />
+
+                <!-- 特殊効果ボタン2  -->
+                <Button
+                    android:id="@+id/player2_special_button2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="2"
+                    android:rotation="180" />
+
+                <!-- 特殊効果ボタン1  -->
+                <Button
+                    android:id="@+id/player2_special_button1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="1"
+                    android:rotation="180" />
+            </LinearLayout>
+
+            <!--  Player1のスコア  -->
+            <TextView
+                android:id="@+id/player1_score_text"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="5"
+                android:text="点"
+                android:textColor="#563fff"
+                android:gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!--  Player1  -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:text="player1"
+        android:textSize="20sp"
+        android:textColor="#563fff"
+        android:gravity="center" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:weightSum="3"
+        >
+
+        <!--  右移動ボタン  -->
+        <Button
+            android:id="@+id/player1_right_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="right"
+            />
+
+        <!--  SMASHボタン  -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="10">
+            <Space
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                />
+            <Button
+                android:id="@+id/player1_smash_button"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="6"
+                android:text="Smash"
+                />
+            <Space
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                />
+            </LinearLayout>
+
+        <!--  左移動ボタン  -->
+        <Button
+            android:id="@+id/player1_left_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="left"
+            />
+    </LinearLayout>
+
+</LinearLayout>
