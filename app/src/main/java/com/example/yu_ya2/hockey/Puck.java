@@ -14,14 +14,15 @@ public class Puck {
     public final Point centerPoint;    // 円の中心
     public final int radius;           // 半径
     private final Paint paint;         // 色
-
-
+    private final PuckCallback puckCallback;
+    
     //======================================================================================
     //--  コンストラクタ
     //======================================================================================
-    public Puck(int centerX, int centerY, int radius) {
+    public Puck(int centerX, int centerY, int radius, PuckCallback pc) {
         this.centerPoint = new Point(centerX, centerY);
         this.radius = radius;
+        this.puckCallback = pc;
 
         paint = new Paint();
     }
@@ -40,10 +41,24 @@ public class Puck {
     //--  移動メソッド
     //======================================================================================
     private int energyX = 0;   // X方向の力
-    private int energyY = 1;   // Y方向の力
+    private int energyY = 2;   // Y方向の力
 
     public void move() {
-        centerPoint.offset(energyX, energyY);  // 中心の移動
+        Point moveDis = puckCallback.moveDistance(this, new Point(energyX, energyY));
+        if ( moveDis.x != energyX ) { energyX *= -1; }
+        if ( moveDis.y != energyY ) { energyY *= -1; }
+        centerPoint.offset(moveDis.x, moveDis.y);  // 中心の移動
+    }
+
+    //======================================================================================
+    //--  勢いの追加メソッド
+    //======================================================================================
+    public void scaleEnergy(int scaleX, int scaleY) {
+        energyX *= scaleX;  energyY *= scaleY;
+    }
+
+    public void addEnergy(int eneX, int eneY) {
+        energyX += eneX;  energyY += eneY;
     }
 
     //======================================================================================
@@ -53,14 +68,16 @@ public class Puck {
     //======================================================================================
 
     //======================================================================================
-    //--  当たり判定コールバック
+    //--  パックコールバック
     //======================================================================================
 
     /*
-     * 返却値を Point をx方向,
-     *
+     * @para  puck   移動させたいパック
+     * @para  moveDistance  移動させたい距離
+     * 返却値は移動すべき距離
      */
-    public interface CollisionCallback {
-        Point puckHit();
+
+    public interface PuckCallback {
+        Point moveDistance(Puck puckm, Point moveDistance);
     }
 }
