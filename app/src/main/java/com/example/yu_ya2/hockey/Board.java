@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by YU-YA on 2016/12/02.
  */
 
-public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.PuckCallback {
+public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.PuckCallback, Mallet.MalletCallback {
 
     private final SurfaceHolder holder;
     private static final int DRAW_INTERVAL = 1000 / 80;  // 描画感覚
@@ -78,8 +77,8 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
             int startPointTop1 = height - 2 * malletHeight;    // 開始時のマレット1の上端の位置
             int startPointTop2 = malletHeight;                 // 開始時のマレット2の上端の位置
 
-            player1 = new Mallet(startPointLeft, startPointTop1, startPointLeft+malletWidth, startPointTop1+malletHeight, player1Paint);
-            player2 = new Mallet(startPointLeft, startPointTop2, startPointLeft+malletWidth, startPointTop2+malletHeight, player2Paint);
+            player1 = new Mallet(startPointLeft, startPointTop1, startPointLeft+malletWidth, startPointTop1+malletHeight, player1Paint, this);
+            player2 = new Mallet(startPointLeft, startPointTop2, startPointLeft+malletWidth, startPointTop2+malletHeight, player2Paint, this);
         }
     }
 
@@ -100,30 +99,30 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
 
         @Override
         public void run() {
-            while (!isFinished.get()) {
-                if (holder.isCreating()) {
+            while ( !isFinished.get() ) {
+                if ( holder.isCreating() ) {
                     continue;
                 }
 
                 Canvas canvas = holder.lockCanvas();
-                if (canvas == null) {
+                if ( canvas == null ) {
                     continue;
                 }
+
+                long startTime = System.currentTimeMillis();
+
                 drawGame(canvas);
 
                 holder.unlockCanvasAndPost(canvas);
 
-                puck.move();  // Puckの移動
+                long waitTime = DRAW_INTERVAL - (System.currentTimeMillis() - startTime);
+                if ( waitTime > 0 ) {
+                    synchronized (this) {
+                        try {
+                            wait(waitTime);
+                        } catch (InterruptedException e) {
 
-                //-- Player1
-                HockeyMain.ButtonEventFlag btnFlag = boardCallback.getButtonEventFlag1();
-                if ( btnFlag.isBtnLeft() ) { player1.move(5, 0); }
-                if ( btnFlag.isBtnRight() ) { player1.move(-5, 0); }
-
-                synchronized (this) {
-                    try {
-                        wait(DRAW_INTERVAL);
-                    } catch (InterruptedException e) {
+                        }
                     }
                 }
             }
@@ -161,6 +160,27 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
         this.puck.draw(canvas);
         this.player1.draw(canvas);
         this.player2.draw(canvas);
+
+        puck.move();  // Puckの移動
+
+        //-- Player1
+        HockeyMain.ButtonEventFlag btnFlag1 = boardCallback.getButtonEventFlag1();
+        if ( btnFlag1.isBtnLeft() ) { player1.move(-5, 0); }
+        if ( btnFlag1.isBtnRight() ) { player1.move(5, 0); }
+
+        //-- Player2
+        HockeyMain.ButtonEventFlag btnFlag2 = boardCallback.getButtonEventFlag2();
+        if ( btnFlag2.isBtnLeft() ) { player2.move(5, 0); }
+        if ( btnFlag2.isBtnRight() ) { player2.move(-5, 0); }
+
+        //-- ゴール判定
+        if ( puck.centerPoint.y+puck.radius <= 0 ) {
+            boardCallback.addScorePlayer1();
+            puck = new Puck(boardWidth/2, boardHeight/2, DEFAULT_PUCK_SIZE, this);
+        } else if ( puck.centerPoint.y-puck.radius >= boardHeight ) {
+            boardCallback.addScorePlayer2();
+            puck = new Puck(boardWidth/2, boardHeight/2, DEFAULT_PUCK_SIZE, this);
+        }
     }
 
     //======================================================================================
@@ -176,7 +196,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
     //--  パックコールバック
     //======================================================================================
     @Override
-    public Point moveDistance(Puck puck, Point moveDistance) {
+    public Point changeEnergy(Puck puck, Point moveDistance) {
         //-- 移動後のpuckの中心座標
         int newCenterX = puck.centerPoint.x + moveDistance.x;
         int newCenterY = puck.centerPoint.y + moveDistance.y;
@@ -192,14 +212,15 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
 
         //-- ボードの壁との判定
         if ( newPuckLeft < 0 ) {
-            int dis = newPuckLeft;
+            int dis = puck.centerPoint.x - puck.radius;
             newCenterX -= dis;  newPuckLeft -= dis;  newPuckRight -= dis;
             retDistance.x = -dis;
-        }
-        if ( newPuckRight > boardWidth ) {
-            int dis = boardWidth - newPuckRight;
-            newCenterX -= dis;  newPuckLeft -= dis;  newPuckRight -= dis;
-            retDistance.x = -dis;
+            puck.scaleEnergy(-1, 1);
+        } else if ( newPuckRight > boardWidth ) {
+            int dis = boardWidth - (puck.centerPoint.x + puck.radius);
+            newCenterX += dis;  newPuckLeft += dis;  newPuckRight += dis;
+            retDistance.x = dis;
+            puck.scaleEnergy(-1, 1);
         }
 
         //-- プレイヤー1のマレットとの判定
@@ -208,27 +229,131 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
             if ( player1.rect.contains(newCenterX, newPuckBottom) ) {  // パックの下端がマレットと接触した場合
                 int dis = newPuckBottom - player1.rect.top;
                 retDistance.y = -dis;
+                puck.scaleEnergy(1, -1);
             } else if ( player1.rect.contains(newCenterX, newPuckTop) )  {  // パックの上端がマレットと接触した場合
                 int dis = newPuckTop - player1.rect.bottom;
                 retDistance.y = -dis;
+                puck.scaleEnergy(1, -1);
             } else if ( player1.rect.contains(newPuckLeft, newCenterY) ) {  // パックの左端がマレットと接触した場合
                 int dis = newPuckLeft - player1.rect.right;
                 retDistance.x = -dis;
+                puck.scaleEnergy(-1, 1);
             } else if ( player1.rect.contains(newPuckRight, newCenterY) ) {  // パックの右端がマレットと接触した場合
                 int dis = newPuckRight - player1.rect.left;
                 retDistance.x = -dis;
+                puck.scaleEnergy(-1, 1);
             } else {  // 角がパックと接触したかどうかを判定
                 int left = player1.rect.left;
                 int top = player1.rect.top;
                 int right = player1.rect.right;
                 int bottom = player1.rect.bottom;
                 if ( getDistance(newCenterX, newCenterY, left, top) <= puck.radius ) {
-
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = -2 * sum / 3;   retDistance.y = -2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, right, top) <= puck.radius ) {
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = 2 * sum / 3;   retDistance.y = -2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, left, bottom) <= puck.radius ) {
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = -2 * sum / 3;   retDistance.y = 2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, right,bottom) <= puck.radius ) {
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = 2 * sum / 3;   retDistance.y = 2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
                 }
-
             }
         }
 
+        //-- プレイヤー2のマレットとの判定
+        Rect player2Range = new Rect(player2.rect.left-puck.radius, player2.rect.top-puck.radius, player2.rect.right+puck.radius, player2.rect.bottom+puck.radius);  // マレットとパックが接触している可能性がある範囲
+        if ( player2Range.contains(newCenterX, newCenterY) ) {   // 大雑把な接触判定
+            if ( player2.rect.contains(newCenterX, newPuckBottom) ) {  // パックの下端がマレットと接触した場合
+                int dis = newPuckBottom - player2.rect.top;
+                retDistance.y = -dis;
+                puck.scaleEnergy(1, -1);
+            } else if ( player2.rect.contains(newCenterX, newPuckTop) )  {  // パックの上端がマレットと接触した場合
+                int dis = newPuckTop - player2.rect.bottom;
+                retDistance.y = -dis;
+                puck.scaleEnergy(1, -1);
+            } else if ( player2.rect.contains(newPuckLeft, newCenterY) ) {  // パックの左端がマレットと接触した場合
+                int dis = newPuckLeft - player2.rect.right;
+                retDistance.x = -dis;
+                puck.scaleEnergy(-1, 1);
+            } else if ( player2.rect.contains(newPuckRight, newCenterY) ) {  // パックの右端がマレットと接触した場合
+                int dis = newPuckRight - player2.rect.left;
+                retDistance.x = -dis;
+                puck.scaleEnergy(-1, 1);
+            } else {  // 角がパックと接触したかどうかを判定
+                int left = player2.rect.left;
+                int top = player2.rect.top;
+                int right = player2.rect.right;
+                int bottom = player2.rect.bottom;
+                if ( getDistance(newCenterX, newCenterY, left, top) <= puck.radius ) {  //左上角
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = -2 * sum / 3;   retDistance.y = -2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, right, top) <= puck.radius ) {  // 右上角
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = 2 * sum / 3;   retDistance.y = -2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, left, bottom) <= puck.radius ) {  // 左下角
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = -2 * sum / 3;   retDistance.y = 2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                } else if ( getDistance(newCenterX, newCenterY, right,bottom) <= puck.radius ) {  // 右下角
+                    int sum = Math.abs(moveDistance.x) + Math.abs(moveDistance.y);
+                    retDistance.x = 2 * sum / 3;   retDistance.y = 2 * sum / 3;
+                    puck.setEnergy(retDistance.x, retDistance.y);
+                }
+            }
+        }
+
+        return retDistance;
+    }
+
+    //======================================================================================
+    //--  マレットコールバック
+    //======================================================================================
+    @Override
+    public Point calcDistance(Mallet mallet, Point moveDistance) {
+        //-- 返却用Point
+        Point retDistance = new Point(moveDistance.x, moveDistance.y);
+
+        //-- 移動後のマレットの端の座標
+        int newMalletLeft = mallet.rect.left + moveDistance.x;       // マレットの最左端
+        int newMalletRight = mallet.rect.right + moveDistance.x;     // マレットの最右端
+        int newMalletTop = mallet.rect.top + moveDistance.y;         // マレットの最上端
+        int newMalletBottom = mallet.rect.bottom + moveDistance.y;   // マレットの最下端
+
+        //-- ボードの壁との判定
+        if ( newMalletLeft < 0 ) {
+            int dis = mallet.rect.left;
+            newMalletLeft -= dis;  newMalletRight -= dis;
+            retDistance.x = -dis;
+        } else if ( newMalletRight > boardWidth ) {
+            int dis = boardWidth - mallet.rect.right;
+            newMalletLeft += dis;  newMalletRight += dis;
+            retDistance.x = dis;
+        }
+
+        //-- パックとの判定
+        // パックの最端の座標
+        int puckLeft = puck.centerPoint.x-puck.radius;
+        int puckTop = puck.centerPoint.y-puck.radius;
+        int puckRight = puck.centerPoint.x+puck.radius;
+        int puckBottom = puck.centerPoint.y+puck.radius;
+
+        //-- マレットがパックを壁と挟み込む形になるとき
+        if ( mallet.rect.top <= puck.centerPoint.y && puck.centerPoint.y <= mallet.rect.bottom  ) {  // パックがマレットと同じy軸上にいるか
+            if ( puck.centerPoint.x <= puck.radius || puck.centerPoint.x >= boardWidth - puck.radius ) {  // パックが壁に引っ付いているか
+                if ( new Rect(newMalletLeft, newMalletTop, newMalletRight, newMalletBottom).intersect(puckLeft, puckTop, puckRight, puckBottom) ) {  // 接触しているか
+                    retDistance.set(0, 0);
+                }
+            }
+        }
 
         return retDistance;
     }
@@ -254,5 +379,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
     public interface BoardCallback {
         HockeyMain.ButtonEventFlag getButtonEventFlag1();
         HockeyMain.ButtonEventFlag getButtonEventFlag2();
+        void addScorePlayer1();
+        void addScorePlayer2();
     }
 }

@@ -31,22 +31,20 @@ public class Puck {
     //--  描画メソッド
     //======================================================================================
     public void draw(Canvas canvas) {
-        paint.setColor(Color.rgb(0x69, 0x69, 0x69));
+        paint.setColor(Color.rgb(0xC0, 0xC0, 0xC0));
         canvas.drawCircle(centerPoint.x, centerPoint.y, radius, paint);
-        paint.setColor(Color.argb(0x40, 0x00, 0x00, 0x00));
+        paint.setColor(Color.argb(0x40, 0xFF, 0xFF, 0xFF));
         canvas.drawCircle(centerPoint.x, centerPoint.y, (int)(radius*0.7), paint);
     }
 
     //======================================================================================
     //--  移動メソッド
     //======================================================================================
-    private int energyX = 0;   // X方向の力
-    private int energyY = 2;   // Y方向の力
+    private int energyX = 3;   // X方向の力
+    private int energyY = 5;   // Y方向の力
 
     public void move() {
-        Point moveDis = puckCallback.moveDistance(this, new Point(energyX, energyY));
-        if ( moveDis.x != energyX ) { energyX *= -1; }
-        if ( moveDis.y != energyY ) { energyY *= -1; }
+        Point moveDis = puckCallback.changeEnergy(this, new Point(energyX, energyY));
         centerPoint.offset(moveDis.x, moveDis.y);  // 中心の移動
     }
 
@@ -61,6 +59,10 @@ public class Puck {
         energyX += eneX;  energyY += eneY;
     }
 
+    public void setEnergy(int eneX, int eneY) {
+        energyX = eneX; energyY = eneY;
+    }
+
     //======================================================================================
     //======================================================================================
     //--  内部クラス
@@ -73,11 +75,12 @@ public class Puck {
 
     /*
      * @para  puck   移動させたいパック
-     * @para  moveDistance  移動させたい距離
+     * @para  changeEnergy  移動させたい距離
+     * メソッド内でパックの勢い(energyX, energyY)も変更される
      * 返却値は移動すべき距離
      */
 
     public interface PuckCallback {
-        Point moveDistance(Puck puckm, Point moveDistance);
+        Point changeEnergy(Puck puck, Point moveDistance);
     }
 }

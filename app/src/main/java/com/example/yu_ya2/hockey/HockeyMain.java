@@ -3,19 +3,28 @@ package com.example.yu_ya2.hockey;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class HockeyMain extends Activity implements Board.BoardCallback {
 
-    SurfaceView surfaceView;
-    Board board;
+    private SurfaceView surfaceView;
+    private Board board;
 
-    ButtonEventFlag buttonEventFlag1;
-    ButtonEventFlag buttonEventFlag2;
+    private ButtonEventFlag buttonEventFlag1;
+    private ButtonEventFlag buttonEventFlag2;
+
+    TextView text1;
+    TextView text2;
+    private int player1Score = 0;
+    private int player2Score = 0;
+
+    Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,8 +33,6 @@ public class HockeyMain extends Activity implements Board.BoardCallback {
         surfaceView = (SurfaceView)findViewById(R.id.board_view);
         board = new Board(this, surfaceView);
         board.setCallback(this);  // コールバックセット
-
-
 
         //-- イベント付与
         initListener();
@@ -42,6 +49,11 @@ public class HockeyMain extends Activity implements Board.BoardCallback {
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        text1 = (TextView) findViewById(R.id.player1_score_text);
+        text1.setText(Integer.toString(player2Score));
+        text2 = (TextView) findViewById(R.id.player2_score_text);
+        text2.setText(Integer.toString(player2Score));
     }
 
     //======================================================================================
@@ -55,6 +67,37 @@ public class HockeyMain extends Activity implements Board.BoardCallback {
     @Override
     public ButtonEventFlag getButtonEventFlag2() {
         return buttonEventFlag2;
+    }
+
+    //======================================================================================
+    //--  スコア加算メソッド
+    //======================================================================================
+    @Override
+    public void addScorePlayer1() {
+        player1Score++;
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                text1.setText(String.valueOf(player1Score));
+
+                return;
+            }
+        });
+    }
+
+    @Override
+    public void addScorePlayer2() {
+        player2Score++;
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                text2.setText(String.valueOf(player2Score));
+
+                return;
+            }
+        });
     }
 
     //======================================================================================

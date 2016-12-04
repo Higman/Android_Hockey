@@ -79,6 +79,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
+        android:background="#ffd56b"
         android:weightSum="8">
         <!--  左側  -->
         <LinearLayout
@@ -86,6 +87,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="#FFFFFF"
             android:weightSum="10">
 
             <!--  Player2のスコア  -->
@@ -146,6 +148,7 @@
             android:id="@+id/board_view"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_margin="10dp"
             android:layout_weight="6"/>
 
         <!--  右側  -->
@@ -154,6 +157,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="#FFFFFF"
             android:weightSum="10">
 
             <!--  Player2の強化ボタン  -->
@@ -231,13 +235,13 @@
         android:weightSum="3"
         >
 
-        <!--  右移動ボタン  -->
+        <!--  左移動ボタン  -->
         <Button
-            android:id="@+id/player1_right_button"
+            android:id="@+id/player1_left_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="right"
+            android:text="left"
             />
 
         <!--  SMASHボタン  -->
@@ -266,13 +270,13 @@
                 />
             </LinearLayout>
 
-        <!--  左移動ボタン  -->
+        <!--  右移動ボタン  -->
         <Button
-            android:id="@+id/player1_left_button"
+            android:id="@+id/player1_right_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="left"
+            android:text="right"
             />
     </LinearLayout>
 
