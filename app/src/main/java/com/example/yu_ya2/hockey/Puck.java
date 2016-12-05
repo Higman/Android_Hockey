@@ -40,7 +40,7 @@ public class Puck {
     //======================================================================================
     //--  移動メソッド
     //======================================================================================
-    private int energyX = 3;   // X方向の力
+    private int energyX = 0;   // X方向の力
     private int energyY = 5;   // Y方向の力
 
     public void move() {
@@ -48,11 +48,40 @@ public class Puck {
         centerPoint.offset(moveDis.x, moveDis.y);  // 中心の移動
     }
 
+    public int getEnergyX() {
+        return energyX;
+    }
+
+    public void setEnergyX(int energyX) {
+        this.energyX = energyX;
+    }
+
+    public int getEnergyY() {
+        return energyY;
+    }
+
+    public void setEnergyY(int energyY) {
+        this.energyY = energyY;
+    }
+
     //======================================================================================
     //--  勢いの追加メソッド
     //======================================================================================
-    public void scaleEnergy(int scaleX, int scaleY) {
+    private final int MIN_ENERGY_Y = 5;
+    private final int MAX_ENERGY_Y = 50;
+    private final int MIN_ENERGY_X = 0;
+    private final int MAX_ENERGY_X = 50;
+
+    public void scaleEnergy(float scaleX, float scaleY) {
         energyX *= scaleX;  energyY *= scaleY;
+
+        //-- 上限に達した時の補正
+        if ( Math.abs(energyX) > MAX_ENERGY_X) { energyX = (int) (MAX_ENERGY_X * Math.signum(energyX)); }
+        if ( Math.abs(energyY) > MAX_ENERGY_Y) { energyY = (int) (MAX_ENERGY_Y * Math.signum(energyY)); }
+
+        //-- 下限に達した時の補正
+        if ( Math.abs(energyX) < MIN_ENERGY_X) { energyX = (int) (MIN_ENERGY_X * Math.signum(energyX)); }
+        if ( Math.abs(energyY) < MIN_ENERGY_Y) { energyY = (int) (MIN_ENERGY_Y * Math.signum(energyY)); }
     }
 
     public void addEnergy(int eneX, int eneY) {

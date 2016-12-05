@@ -51,7 +51,7 @@ public class HockeyMain extends Activity implements Board.BoardCallback {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         text1 = (TextView) findViewById(R.id.player1_score_text);
-        text1.setText(Integer.toString(player2Score));
+        text1.setText(Integer.toString(player1Score));
         text2 = (TextView) findViewById(R.id.player2_score_text);
         text2.setText(Integer.toString(player2Score));
     }

@@ -3,6 +3,7 @@ package com.example.yu_ya2.hockey;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.Log;
 
@@ -14,6 +15,8 @@ public class Mallet {
 
     public final Rect rect;   // マレットの矩形
     private final Paint paint;  // 色
+
+    private final PointF powerScale = new PointF(0.9f, 0.9f);  // マレットの力
 
     private MalletCallback malletCallback;
 
@@ -31,6 +34,7 @@ public class Mallet {
     //--  移動メソッド
     //======================================================================================
     public void move(int dx, int dy) {
+        //-- 通常の移動
         Point moveDis = malletCallback.calcDistance(this, new Point(dx, dy));
         rect.offset(moveDis.x, moveDis.y);
     }
@@ -40,6 +44,62 @@ public class Mallet {
     //======================================================================================
     public void draw(Canvas canvas) {
         canvas.drawRect(rect, paint);
+    }
+
+    //======================================================================================
+    //--  パックに勢いを与えるメソッド
+    //======================================================================================
+    public void givePower(Puck puck) {
+        puck.scaleEnergy(powerScale.x, powerScale.y);
+    }
+
+    //======================================================================================
+    //-- マレットの力の追加メソッド
+    //======================================================================================
+    public void setPower(float powX, float powY) {
+        powerScale.x = powX; powerScale.y = powY;
+    }
+
+    //======================================================================================
+    //--  スマッシュメソッド
+    //======================================================================================
+    private int smashMoveY = 0;
+
+    private static final int SMASH_MOVE_SPEED = 10;   // 移動スピード
+    private int smashDirection;  // スマッシュする向き
+
+    public boolean smash(Puck puck, boolean dir) {   // dir で向きを設定、真で上向き
+        if ( smashMoveCnt >= 0 ) { return false; }  // 実行中
+
+        if ( dir ) {
+            smashDirection = 1;
+        } else {
+            smashDirection = -1;
+        }
+
+        smashMoveCnt = SMASH_MOVE_COUNT-1;  // 初期化
+
+        //-- パックのスピードがマレットの移動スピードより小さい場合
+        setPower(0.5f, 1.5f);
+
+        return true;
+    }
+
+    private int smashMoveCnt = 0;
+    private static final int SMASH_MOVE_COUNT = 26;  // 移動回数   偶数限定
+
+    public void smashMove() {
+        if ( smashMoveCnt < 0 ) { setPower(0.9f, 0.9f);  return; }  // スマッシュ未発動
+
+        if ( smashMoveCnt >= SMASH_MOVE_COUNT / 2 ) {
+            smashMoveY = -smashDirection * SMASH_MOVE_SPEED;    // 上方向
+        } else {
+            smashMoveY = smashDirection * SMASH_MOVE_SPEED;     // 下方向
+        }
+
+        rect.offset(0, smashMoveY);  // 移動
+
+        smashMoveCnt--;  // 更新
     }
 
     //======================================================================================
