@@ -68,9 +68,9 @@ public class Puck {
     //--  勢いの追加メソッド
     //======================================================================================
     private final int MIN_ENERGY_Y = 5;
-    private final int MAX_ENERGY_Y = 50;
+    private final int MAX_ENERGY_Y = 45;
     private final int MIN_ENERGY_X = 0;
-    private final int MAX_ENERGY_X = 50;
+    private final int MAX_ENERGY_X = 45;
 
     public void scaleEnergy(float scaleX, float scaleY) {
         energyX *= scaleX;  energyY *= scaleY;

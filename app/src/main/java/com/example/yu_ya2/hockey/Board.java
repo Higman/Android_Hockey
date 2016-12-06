@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.support.v4.app.NavUtils;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -156,6 +155,10 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
     //======================================================================================
     //--  描画メソッド
     //======================================================================================
+    private static final int MALLET_MOVE_DEFAULT_SPEED = 5;
+    private int mallet_speed1 = MALLET_MOVE_DEFAULT_SPEED;
+    private int mallet_speed2 = MALLET_MOVE_DEFAULT_SPEED;
+
     private void drawGame(Canvas canvas) {
         canvas.drawColor(Color.CYAN);
         this.puck.draw(canvas);
@@ -164,19 +167,26 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback, Puck.P
 
         //-- Player1
         HockeyMain.ButtonEventFlag btnFlag1 = boardCallback.getButtonEventFlag1();
-        if ( btnFlag1.isBtnLeft() ) { player1.move(-5, 0); }
-        if ( btnFlag1.isBtnRight() ) { player1.move(5, 0); }
-        if ( btnFlag1.isBtnSmash() ) { player1.smash(puck, true); }
 
-        player1.smashMove();
+        player1.setPowerAdd(0, 0);  // マレットが生み出すパックの勢いの初期化
+
+        if ( btnFlag1.isBtnLeft() ) { player1.setPowerAdd(mallet_speed1/2, 0);   player1.move(-mallet_speed1, 0); }
+        if ( btnFlag1.isBtnRight() ) { player1.setPowerAdd(-mallet_speed1/2, 0);  player1.move(mallet_speed1, 0); }
+        if ( btnFlag1.isBtnSmash() ) { player1.smash(puck, true); }
+        if ( btnFlag1.isBtnSp1() ) { mallet_speed1 = 10; }
+        if ( btnFlag1.isBtnSp2() ) { mallet_speed1 = MALLET_MOVE_DEFAULT_SPEED; }
+
+        player1.smashMove();        // スマッシュ動作
 
         //-- Player2
+        player2.setPowerAdd(0, 0);  // マレットが生み出すパックの勢いの初期化
+
         HockeyMain.ButtonEventFlag btnFlag2 = boardCallback.getButtonEventFlag2();
-        if ( btnFlag2.isBtnLeft() ) { player2.move(5, 0); }
-        if ( btnFlag2.isBtnRight() ) { player2.move(-5, 0); }
+        if ( btnFlag2.isBtnLeft() ) { player2.setPowerAdd(mallet_speed2/2, 0);  player2.move(mallet_speed2, 0); }
+        if ( btnFlag2.isBtnRight() ) { player2.setPowerAdd(-mallet_speed2/2, 0);  player2.move(-mallet_speed2, 0); }
         if ( btnFlag2.isBtnSmash() ) { player2.smash(puck, false); }
 
-        player2.smashMove();
+        player2.smashMove();        // スマッシュ動作
 
 
         puck.move();  // Puckの移動

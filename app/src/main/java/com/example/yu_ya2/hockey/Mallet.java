@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.util.Log;
 
 /**
  * Created by YU-YA2 on 2016/12/03.
@@ -16,7 +15,8 @@ public class Mallet {
     public final Rect rect;   // マレットの矩形
     private final Paint paint;  // 色
 
-    private final PointF powerScale = new PointF(0.9f, 0.9f);  // マレットの力
+    private final PointF powerScale = new PointF(0.9f, 0.9f);  // パックの勢いを変化させる力
+    private final Point powerAdd = new Point(0, 0);            // パックに勢いを発生させる力
 
     private MalletCallback malletCallback;
 
@@ -50,13 +50,18 @@ public class Mallet {
     //--  パックに勢いを与えるメソッド
     //======================================================================================
     public void givePower(Puck puck) {
-        puck.scaleEnergy(powerScale.x, powerScale.y);
+        puck.scaleEnergy(powerScale.x, powerScale.y);   // パックの勢いの更新
+        puck.addEnergy(powerAdd.x, powerAdd.y);         // パックの勢いの発生
     }
 
     //======================================================================================
     //-- マレットの力の追加メソッド
     //======================================================================================
-    public void setPower(float powX, float powY) {
+    public void setPowerAdd(int powX, int powY) {
+        powerAdd.x = powX; powerAdd.y = powY;
+    }
+
+    public void setPowerScale(float powX, float powY) {
         powerScale.x = powX; powerScale.y = powY;
     }
 
@@ -80,7 +85,7 @@ public class Mallet {
         smashMoveCnt = SMASH_MOVE_COUNT-1;  // 初期化
 
         //-- パックのスピードがマレットの移動スピードより小さい場合
-        setPower(0.5f, 1.5f);
+        setPowerScale(0.5f, 1.5f);
 
         return true;
     }
@@ -89,7 +94,7 @@ public class Mallet {
     private static final int SMASH_MOVE_COUNT = 26;  // 移動回数   偶数限定
 
     public void smashMove() {
-        if ( smashMoveCnt < 0 ) { setPower(0.9f, 0.9f);  return; }  // スマッシュ未発動
+        if ( smashMoveCnt < 0 ) { setPowerScale(0.9f, 0.9f);  return; }  // スマッシュ未発動
 
         if ( smashMoveCnt >= SMASH_MOVE_COUNT / 2 ) {
             smashMoveY = -smashDirection * SMASH_MOVE_SPEED;    // 上方向
